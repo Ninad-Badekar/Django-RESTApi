@@ -69,5 +69,3 @@ http://localhost:8000/redoc/
 - `orders/` - Order placement & tracking
 - `Ecommerce/` - Project settings & URLs
 
-## License
-This project is licensed under MIT License.
