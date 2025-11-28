@@ -1,15 +1,38 @@
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from Ecommerce.product import views
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-router = DefaultRouter()
-router.register(r'category', views.CategoryView)
-router.register(r'brand', views.BrandView)
-router.register(r'product', views.ProductView)
+from django.conf import settings
+from django.conf.urls.static import static
+
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework import permissions
+
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="E-Commerce API",
+        default_version='v1',
+        description="API documentation for the E-Commerce project",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/schema/docs/', SpectacularSwaggerView.as_view(url_name='schema')),
-]
+    path("admin/", admin.site.urls),
+
+    # App URLs
+    path("api/users/", include("users.urls")),
+    path("api/products/", include("products.urls")),
+    path("api/cart/", include("cart.urls")),
+    path("api/orders/", include("orders.urls")),
+
+    # JWT Authentication
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+
+    # Swagger UI
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
